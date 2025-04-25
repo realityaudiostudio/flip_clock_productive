@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>iOS Style Flip Clock</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      color: #ccc;
+      font-family: 'DM Sans', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .top-buttons {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .top-buttons button {
+      background: #222;
+      color: #ccc;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .top-buttons button:hover {
+      background: #333;
+    }
+
+    .flip-clock {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .card {
+      position: relative;
+      background: #111;
+      border-radius: 12px;
+      width: 180px;
+      height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ccc;
+      font-size: 160px;
+      font-weight: 700;
+      line-height: 1;
+      box-shadow: inset 0 -2px 0 #000, inset 0 2px 0 #000;
+      text-shadow: 0 0 10px #555;
+      transition: transform 0.5s ease-in-out;
+    }
+
+    .card.flipping {
+      animation: flip 0.6s;
+    }
+
+    @keyframes flip {
+      0% {
+        transform: rotateX(0deg);
+      }
+      50% {
+        transform: rotateX(90deg);
+      }
+      100% {
+        transform: rotateX(0deg);
+      }
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 2px;
+      background: #000;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      z-index: 1;
+    }
+
+    .am-pm {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 24px;
+      color: #ccc;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .footer {
+      color: #888;
+      font-size: 16px;
+      margin-top: 20px;
+      text-align: center;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    @media (max-width: 768px) {
+      .card {
+        width: 120px;
+        height: 160px;
+        font-size: 100px;
+      }
+
+      .am-pm {
+        font-size: 16px;
+      }
+
+      .top-buttons button {
+        font-size: 16px;
+        padding: 8px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        width: 90px;
+        height: 120px;
+        font-size: 72px;
+      }
+
+      .top-buttons button {
+        font-size: 14px;
+        padding: 6px;
+      }
+
+      .footer {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-buttons">
+    <button onclick="toggleSeconds()" title="Toggle Seconds">⏱</button>
+    <button onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
+  </div>
+
+  <div class="flip-clock-container">
+    <div class="flip-clock">
+      <div class="card">
+        <div class="am-pm" id="ampm">AM</div>
+        <span id="hour">9</span>
+      </div>
+      <div class="card">
+        <span id="minute">00</span>
+      </div>
+      <div class="card" id="seconds-card" style="display: none;">
+        <span id="second">00</span>
+      </div>
+    </div>
+    <div class="footer">Alan Jose Santo</div>
+  </div>
+
+  <script>
+    let showSeconds = false;
+
+    function animateFlip(element) {
+      const card = element.closest('.card');
+      card.classList.add('flipping');
+      setTimeout(() => {
+        card.classList.remove('flipping');
+      }, 600);
+    }
+
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const seconds = now.getSeconds().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+
+      hours = hours % 12 || 12;
+
+      const hourEl = document.getElementById('hour');
+      const minuteEl = document.getElementById('minute');
+      const secondEl = document.getElementById('second');
+      const ampmEl = document.getElementById('ampm');
+
+      if (hourEl.textContent != hours) {
+        animateFlip(hourEl);
+        hourEl.textContent = hours;
+      }
+
+      if (minuteEl.textContent != minutes) {
+        animateFlip(minuteEl);
+        minuteEl.textContent = minutes;
+      }
+
+      if (secondEl && secondEl.textContent != seconds && showSeconds) {
+        animateFlip(secondEl);
+        secondEl.textContent = seconds;
+      }
+
+      ampmEl.textContent = ampm;
+    }
+
+    function toggleSeconds() {
+      showSeconds = !showSeconds;
+      const secondsCard = document.getElementById('seconds-card');
+      secondsCard.style.display = showSeconds ? 'flex' : 'none';
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+</body>
+</html>
