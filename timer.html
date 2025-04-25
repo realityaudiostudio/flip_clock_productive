@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Timer with Sound</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      color: #ccc;
+      font-family: 'DM Sans', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .top-buttons {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .top-buttons button {
+      background: #222;
+      color: #ccc;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .top-buttons button:hover {
+      background: #333;
+    }
+
+    .flip-clock {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .card {
+      position: relative;
+      background: #111;
+      border-radius: 12px;
+      width: 210px;
+      height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ccc;
+      font-size: 160px;
+      font-weight: 700;
+      line-height: 1;
+      box-shadow: inset 0 -2px 0 #000, inset 0 2px 0 #000;
+      text-shadow: 0 0 10px #555;
+      transition: transform 0.5s ease-in-out;
+      padding: 15px;
+    }
+
+    .card.flipping {
+      animation: flip 0.6s;
+    }
+
+    @keyframes flip {
+      0% {
+        transform: rotateX(0deg);
+      }
+      50% {
+        transform: rotateX(90deg);
+      }
+      100% {
+        transform: rotateX(0deg);
+      }
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 2px;
+      background: #000;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      z-index: 1;
+    }
+
+    .footer {
+      color: #888;
+      font-size: 16px;
+      margin-top: 20px;
+      text-align: center;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    .input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-align: center;
+    }
+
+    .input-container input {
+      padding: 10px;
+      font-size: 20px;
+      border-radius: 8px;
+      border: none;
+      background-color: #222;
+      color: #ccc;
+    }
+
+    .input-container button {
+      padding: 12px;
+      background-color: #444;
+      color: #ccc;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .input-container button:hover {
+      background-color: #555;
+    }
+
+    @media (max-width: 768px) {
+      .card {
+        width: 150px;
+        height: 160px;
+        font-size: 100px;
+      }
+
+      .input-container input {
+        font-size: 16px;
+      }
+
+      .footer {
+        font-size: 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        width: 90px;
+        height: 120px;
+        font-size: 72px;
+      }
+
+      .input-container input {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-buttons">
+    <button onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
+    <button onclick="resetTimer()" title="Reset Timer">🔄</button>
+  </div>
+
+  <div class="flip-clock-container">
+    <div class="flip-clock">
+      <div class="card">
+        <span id="hour">00</span>
+      </div>
+      <div class="card">
+        <span id="minute">00</span>
+      </div>
+      <div class="card">
+        <span id="second">00</span>
+      </div>
+    </div>
+
+    <div class="input-container">
+      <input type="number" id="input-hour" placeholder="Enter Hours" min="0" />
+      <input type="number" id="input-minute" placeholder="Enter Minutes" min="0" />
+      <input type="text" id="tagline" placeholder="Enter Tagline" />
+      <button onclick="startTimer()">Start Timer</button>
+    </div>
+
+    <div class="footer" id="footer">Alan Jose Santo</div>
+  </div>
+
+  <script>
+    let timerInterval;
+    let countdownTime;
+    let customTagline = '';
+    const hourEl = document.getElementById('hour');
+    const minuteEl = document.getElementById('minute');
+    const secondEl = document.getElementById('second');
+    const footer = document.getElementById('footer');
+
+    function startTimer() {
+      const hours = parseInt(document.getElementById('input-hour').value) || 0;
+      const minutes = parseInt(document.getElementById('input-minute').value) || 0;
+      customTagline = document.getElementById('tagline').value || 'Time’s up!';
+
+      countdownTime = (hours * 3600 + minutes * 60) * 1000;
+      footer.textContent = customTagline;
+      clearInterval(timerInterval);
+      updateTimerDisplay();
+      document.querySelector('.input-container').style.display = 'none';  // Hide input fields when timer starts
+      
+      timerInterval = setInterval(() => {
+        countdownTime -= 1000;
+        updateTimerDisplay();
+        if (countdownTime <= 0) {
+          clearInterval(timerInterval);
+          footer.textContent = customTagline;
+          playSound();
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const hours = Math.floor(countdownTime / (3600 * 1000));
+      const minutes = Math.floor((countdownTime % (3600 * 1000)) / (60 * 1000));
+      const seconds = Math.floor((countdownTime % (60 * 1000)) / 1000);
+
+      hourEl.textContent = String(hours).padStart(2, '0');
+      minuteEl.textContent = String(minutes).padStart(2, '0');
+      secondEl.textContent = String(seconds).padStart(2, '0');
+    }
+
+function playSound() {
+  const audio = new Audio('sounds/alarm.wav'); // Adjust path as needed
+  audio.load();
+  audio.play().catch((error) => {
+    console.log("Error playing sound:", error);
+  });
+}
+
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      countdownTime = 0;
+      customTagline = '';
+      updateTimerDisplay();
+      document.querySelector('.input-container').style.display = 'block'; // Show input fields again
+      footer.textContent = 'Alan Jose Santo'; // Reset footer
+    }
+
+    window.addEventListener('beforeunload', () => {
+      if (timerInterval) {
+        localStorage.setItem('countdownTime', countdownTime);
+        localStorage.setItem('customTagline', customTagline);
+      }
+    });
+
+    window.addEventListener('load', () => {
+      const savedTime = localStorage.getItem('countdownTime');
+      const savedTagline = localStorage.getItem('customTagline');
+      if (savedTime && savedTagline) {
+        countdownTime = savedTime;
+        customTagline = savedTagline;
+        footer.textContent = customTagline;
+        startTimer();
+      }
+    });
+  </script>
+</body>
+</html>
