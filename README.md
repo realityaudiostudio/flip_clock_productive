@@ -3,3 +3,4 @@ I built this entire app with my creativeity using chat gpt for improving my prod
 I love IOS screen and implimented it with or withou seconds and also with fullscreen option.
 
 ##Creativity by ALAN JOSE SANTO
+##Mainly talking about the all level things done by the ai tool called claude ai.
